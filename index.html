@@ -41,14 +41,14 @@ footer{background:var(--ink);color:#bbb;margin-top:30px;padding:22px 14px;font-s
 <header><div class="row"><div class="logo" onclick="go('')">MC<small>للعطور · MC PERFUMES</small></div><div class="sp"></div>
 <button class="ib" onclick="go('favs')" title="المفضلة">♡<span class="bd" id="fc">0</span></button>
 <button class="ib" onclick="go('cart')" title="السلة">🛒<span class="bd" id="cc">0</span></button></div>
-<div class="row" style="margin-top:6px"><nav><a onclick="go('')">الرئيسية</a><a onclick="go('shop')">جميع العطور</a><a onclick="go('cats')">التصنيفات</a><a onclick="go('shop?sale=1')">العروض</a><a onclick="go('about')">من نحن</a><a onclick="go('contact')">تواصل معنا</a><a id="adm" onclick="go('admin')" style="display:none;color:var(--gold)">لوحة الإدارة</a></nav></div>
+<div class="row" style="margin-top:6px"><nav><a onclick="go('')">الرئيسية</a><a onclick="go('shop')">جميع العطور</a><a onclick="go('cats')">التصنيفات</a><a onclick="go('shop?sale=1')">العروض</a><a onclick="go('about')">من نحن</a><a onclick="go('contact')">تواصل معنا</a><a id="adm" onclick="go(ADM)" style="display:none;color:var(--gold)">لوحة الإدارة</a></nav></div>
 <input id="q" placeholder="🔍 ابحث عن عطر أو ماركة…" autocomplete="off"><div id="sg" hidden></div></header>
 <main id="app"></main>
 <footer><b style="color:var(--gold)">MC للعطور — MC PERFUMES</b><br>عطور أصلية في موريتانيا – التوصيل مجاني لجميع الطلبات.<br><br>
 <a onclick="go('')">الرئيسية</a><a onclick="go('shop')">جميع العطور</a><a onclick="go('cats')">التصنيفات</a><a onclick="go('about')">من نحن</a><a onclick="go('contact')">تواصل معنا</a><a onclick="go('pg:privacy')">سياسة الخصوصية</a><a onclick="go('pg:terms')">الشروط والأحكام</a><a onclick="go('pg:returns')">سياسة الاستبدال والإرجاع</a></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-const CUR=" أوقية جديدة",DEF_CATS=["عطور رجالية","عطور نسائية","عطور نيش","عطور شرقية","عطور يومية","عطور المناسبات","الأكثر مبيعًا"];
+const ADM="mc-2213",CUR=" أوقية جديدة",DEF_CATS=["عطور رجالية","عطور نسائية","عطور نيش","عطور شرقية","عطور يومية","عطور المناسبات","الأكثر مبيعًا"];
 const DEF_M=[...["بنكيلي","مصرفي","السداد","بيم بنك"].map(n=>({name:n,on:true,req:true,num:"",holder:"",note:""})),{name:"كاش",on:true,req:false,num:"",holder:"",note:"الدفع نقدًا عند الاستلام"}];
 const mig=v=>v.methods&&v.methods.length?v.methods:DEF_M.map(x=>{const c=(v.pays||{})[x.name]||{};return{...x,num:c.num||"",holder:c.name||"",note:c.note||x.note||""}});
 const S={prods:[],cats:[],orders:[],set:{pays:{},social:{},pages:{},methods:JSON.parse(JSON.stringify(DEF_M)),site:{},repl:[],opts:{},deliv:{}},cart:[],favs:[],db:null,admin:false,ready:false,cat:"",f:{}};
@@ -259,7 +259,7 @@ else if(at=="pages"){["privacy","terms","returns"].forEach(k=>S.set.pages[k]=$("
 else if(at=="look")readLook();else if(at=="texts"){readRepl();S.set.repl=S.set.repl.filter(x=>x.a)}else if(at=="opts")readOpts();
 try{await S.db.collection("settings").doc("main").set(S.set);toast("تم الحفظ");applySite();route(1)}catch(e){toast("تعذّر الحفظ: "+(e.message||e))}}
 /* ---------- router / boot ---------- */
-function route(keep){const h=location.hash.slice(1),[path,arg]=h.split("?"),[a,b]=path.split("/");let k=a||"home";if(!V[k]&&k.indexOf("pg:")!=0)k="home";
+function route(keep){const h=location.hash.slice(1),[path,arg]=h.split("?"),[a,b]=path.split("/");let k=a||"home";if(a==ADM)k="admin";else if(a=="admin")k="home";if(!V[k]&&k.indexOf("pg:")!=0)k="home";
 if((S.set.opts||{}).maint&&!S.admin&&k!="admin"){app.innerHTML=`<div class="box"><h2>${E(S.set.opts.maintMsg||"الموقع تحت الصيانة حاليًا، نعود قريبًا.")}</h2></div>`;applyRepl(0);return}
 if((!S.ready||!S.setL)&&k!="admin"&&k!="about"&&k!="contact"){app.innerHTML='<div class="box">جارٍ التحميل…</div>';return}
 if(k.indexOf("pg:")==0)app.innerHTML=V.pg(k.slice(3));else app.innerHTML=k=="p"?V.p(b):k=="shop"?V.shop(keep?undefined:arg??""):V[k]();
@@ -271,7 +271,7 @@ const SB_URL="https://ceqbaqkhzchrrrhpwsxk.supabase.co",SB_KEY="sb_publishable_V
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{storage:window.sessionStorage,persistSession:true,autoRefreshToken:true}}),TB={products:"prods",categories:"cats"};
 async function load(t){const{data,error}=await sb.from(t).select("*");if(error){console.warn(t,error);return}
 if(t=="settings"){const v=(data.find(r=>r.id=="main")||{}).data;if(v)S.set={pays:v.pays||{},social:v.social||{},pages:v.pages||{},methods:mig(v),site:v.site||{},repl:v.repl||[],opts:v.opts||{},catsInit:v.catsInit,deliv:v.deliv||{}};S.ready=true;S.setL=true;applySite();route(1)}
-else if(t=="orders"){const nx=data.map(r=>({...r.data,ts:r.data.ts||Date.parse(r.created_at)||0,receipt:r.receipt,payStatus:r.pay_status})),sg=JSON.stringify(nx.map(o=>o.id+o.payStatus+o.status+(o.note||"")));S.orders=nx;if(sg!=load._s){load._s=sg;if(location.hash=="#admin"&&at=="orders")route(1)}}
+else if(t=="orders"){const nx=data.map(r=>({...r.data,ts:r.data.ts||Date.parse(r.created_at)||0,receipt:r.receipt,payStatus:r.pay_status})),sg=JSON.stringify(nx.map(o=>o.id+o.payStatus+o.status+(o.note||"")));S.orders=nx;if(sg!=load._s){load._s=sg;if(location.hash=="#"+ADM&&at=="orders")route(1)}}
 else{S[TB[t]]=data.map(r=>r.data);if(t=="categories")S.catL=true;S.ready=true;route(1)}}
 S.db={collection:t=>({doc:id=>({
 set:async d=>{const{error}=await sb.from(t).upsert({id,data:d});if(error)throw error;await load(t)},
