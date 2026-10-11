@@ -89,6 +89,24 @@ footer{background:#0e0e0e;border-top:3px solid var(--gold)}
 .ord{padding:0}.ord>summary{padding:12px 14px;cursor:pointer;list-style:none}.ord>summary::-webkit-details-marker{display:none}
 .ord>*:not(summary){margin-inline:14px}.ord[open]>summary{border-bottom:1px solid var(--br);margin-bottom:8px}.ord>*:last-child{margin-bottom:12px}
 .unseen{border-inline-start:4px solid var(--gold)}.tag.new{background:#d93025;color:#fff}
+
+/* ---- calm palette: ink + gold + warm white only ---- */
+:root{--bg:#faf8f4;--card:#fff;--tx:#17181c;--mu:#6b6f76;--br:#e9e5dc;--ink:#17181c;--gold:#b08a3e;--goldd:#8a6a28;--ok:#2e7d52;--warn:#a8650f}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121316;--card:#1b1c20;--tx:#f3f1ec;--mu:#9ea2a9;--br:#2b2d33;--ink:#0c0d0f;--gold:#c9a252;--goldd:#d6b46a}}
+:root[data-theme=dark]{--bg:#121316;--card:#1b1c20;--tx:#f3f1ec;--mu:#9ea2a9;--br:#2b2d33;--ink:#0c0d0f;--gold:#c9a252;--goldd:#d6b46a}
+header{background:var(--ink);box-shadow:0 1px 0 #ffffff14}
+.hero,.pgh{background:var(--ink);box-shadow:none;border-radius:20px}
+.hero h1,.pgh b{color:#fff}.hero p,.pgh span{color:#c9ccd2}
+.hero:after{content:"";display:block;width:56px;height:3px;background:var(--gold);border-radius:3px;margin:18px auto 0}
+.pgh:before{color:#ffffff0a}
+.btn{background:var(--gold);color:#fff;box-shadow:none}.btn.k{background:var(--ink);color:#fff;box-shadow:none}
+.btn.o{border-color:var(--gold);color:var(--goldd)}
+.chip.on,nav a.on{background:var(--gold);color:#fff}.bd{background:var(--gold);color:#fff}
+.steps .n{background:var(--gold);color:#fff}
+.card:hover{box-shadow:0 8px 20px #0000001a}
+.card img.p{background:var(--br)}
+.ok,.fr{color:var(--ok)}
+.pr{color:var(--goldd)}
 </style></head><body>
 <div id="ann" hidden style="background:var(--gold);color:#111;text-align:center;padding:6px 10px;font-size:13px;font-weight:700"></div>
 <a id="wf" hidden target="_blank" rel="noopener" style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));inset-inline-end:16px;background:#25D366;color:#fff;border-radius:30px;padding:12px 16px;font-weight:700;text-decoration:none;z-index:8;box-shadow:0 4px 12px #0004">💬 واتساب</a>
@@ -134,6 +152,7 @@ if(n>+s.stock){toast("الكمية المطلوبة أكبر من المتوفر
 function fav(id){S.favs=S.favs.includes(id)?S.favs.filter(x=>x!=id):[...S.favs,id];save();route()}
 function cartLines(){return S.cart.map(c=>{const p=S.prods.find(x=>x.id==c.id),s=p&&p.sizes[c.i];return p&&s?{c,p,s,t:c.q*s.price,pre:!!c.pre}:null}).filter(Boolean)}
 const sum=()=>cartLines().reduce((a,l)=>a+l.t,0);
+function setCat(v){const f=S.f;f.st=v=="@ready"?"av":v=="@bar"?"bar":"";f.cat=v[0]=="@"?"":v;route(1)}
 function filt(list,f){let a=list.filter(p=>!f.cat||p.cat==f.cat);const k=(f.q||"").trim().toLowerCase();
 if(k)a=a.filter(p=>[p.name,p.brand,p.cat,...(p.sizes||[]).map(s=>s.ml+"ml")].join(" ").toLowerCase().includes(k));
 if(f.brand)a=a.filter(p=>p.brand==f.brand);if(f.ml)a=a.filter(p=>p.sizes.some(s=>s.ml==f.ml));if(f.max)a=a.filter(p=>minp(p)<=+f.max);if(f.av)a=a.filter(p=>stk(p)>0);if(f.sale)a=a.filter(p=>+p.oldPrice>0);if(f.st=="bar")a=a.filter(barSP);if(f.st=="av")a=a.filter(readyP);
@@ -147,11 +166,10 @@ ${sec("ready",SN("ready"),R.slice(0,12))}${sec("bar",SN("bar"),B.slice(0,12))}${
 V.cats=()=>`<h2>التصنيفات</h2><div class="grid"><div class="card"><div class="nm">${SN('ready')}</div><div class="mu">${vis().filter(readyP).length} عطر</div><button class="btn" onclick="go('shop?st=av')">تصفح</button></div><div class="card"><div class="nm">${SN('bar')}</div><div class="mu">${vis().filter(barSP).length} عطر</div><button class="btn" onclick="go('shop?st=bar')">تصفح</button></div>${cats().map(c=>`<div class="card"><div class="nm">${E(c)}</div><div class="mu">${vis().filter(p=>p.cat==c).length} عطر</div><button class="btn" onclick="go('shop?cat='+encodeURIComponent('${E(c)}'))">تصفح</button></div>`).join("")}</div>`;
 V.shop=(arg)=>{const u=new URLSearchParams(arg||"");const f=S.f;if(arg!==undefined&&arg!==null){f.cat=u.get("cat")||"";f.sale=u.get("sale")||"";f.q=u.get("q")||"";f.st=u.get("st")||""}
 const P=vis(),br=[...new Set(P.map(p=>p.brand))],ms=[...new Set(P.flatMap(p=>p.sizes.map(s=>+s.ml)))].sort((a,b)=>a-b);
-const r=filt(P,f);return `<h2>جميع العطور</h2><div class="bar"><select onchange="S.f.cat=this.value;route(1)"><option value="">كل التصنيفات</option>${cats().map(c=>`<option ${f.cat==c?"selected":""}>${E(c)}</option>`).join("")}</select>
+const r=filt(P,f);return `<h2>جميع العطور</h2><div class="bar"><select onchange="setCat(this.value)"><option value="">كل التصنيفات</option><option value="@ready" ${f.st=="av"?"selected":""}>${SN('ready')}</option><option value="@bar" ${f.st=="bar"?"selected":""}>${SN('bar')}</option>${cats().map(c=>`<option ${f.cat==c?"selected":""}>${E(c)}</option>`).join("")}</select>
 <select onchange="S.f.brand=this.value;route(1)"><option value="">كل الماركات</option>${br.map(c=>`<option ${f.brand==c?"selected":""}>${E(c)}</option>`).join("")}</select>
 <select onchange="S.f.ml=this.value;route(1)"><option value="">كل الأحجام</option>${ms.map(c=>`<option value="${c}" ${f.ml==c?"selected":""}>${c} ml</option>`).join("")}</select>
 <input type="number" min="0" placeholder="أقصى سعر" value="${E(f.max||"")}" onchange="S.f.max=this.value;route(1)" style="width:110px">
-<select onchange="S.f.st=this.value;route(1)"><option value="">كل الحالات</option><option value="av" ${f.st=="av"?"selected":""}>${SN('ready')}</option><option value="bar" ${f.st=="bar"?"selected":""}>${SN('bar')}</option></select>
 <label><input type="checkbox" ${f.av?"checked":""} onchange="S.f.av=this.checked;route(1)"> المتوفر فقط</label>
 <select onchange="S.f.o=this.value;route(1)"><option value="new">الأحدث</option><option value="lo" ${f.o=="lo"?"selected":""}>السعر: من الأقل</option><option value="hi" ${f.o=="hi"?"selected":""}>السعر: من الأعلى</option><option value="best" ${f.o=="best"?"selected":""}>الأكثر مبيعًا</option></select></div>${grid(r)}`};
 V.favs=()=>`<h2>المفضلة</h2>${grid(vis().filter(p=>S.favs.includes(p.id)))}`;
