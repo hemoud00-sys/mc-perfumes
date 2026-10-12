@@ -345,26 +345,38 @@ const howVideo=()=>{const h=S.set.how||{};return h.video?`<div class="box" style
 let VP=0;
 A.video=()=>{const h=S.set.how||{};return `<div class="box"><b>فيديو «كيف تطلب»</b><div class="mu">يظهر للعميل داخل صفحة «كيف تطلب» ويشاهده داخل الموقع دون الخروج منه. الصيغة المناسبة MP4 والحد الأقصى 50MB (اضغط الفيديو قبل الرفع إن كان أكبر).</div>
 ${h.video?`<video src="${E(h.video)}" onerror="vidFail(this)" controls playsinline preload="metadata" style="width:100%;max-height:50vh;border-radius:12px;background:#000;margin:8px 0"></video><div class="row"><button class="btn o" onclick="vidTest()">فحص الفيديو</button><button class="btn r" onclick="delVideo()">حذف الفيديو</button></div>`:'<div class="mu" style="margin:8px 0">لا يوجد فيديو بعد.</div>'}
-<label class="lbl">${h.video?"استبدال الفيديو":"رفع فيديو"}</label><input type="file" accept="video/mp4,video/webm,video/quicktime" onchange="upVideo(this)"><div id="vp" class="mu">${VPMSG?`<span class="err">${E(VPMSG)}</span>`:""}</div></div>`};
+<label class="lbl">${h.video?"استبدال الفيديو":"رفع فيديو"}</label><input type="file" accept="video/mp4,video/webm,video/quicktime" onchange="upVideo(this)"><div id="vp" class="mu" style="white-space:pre-line">${VPMSG?`<span class="err">${E(VPMSG)}</span>`:""}</div></div>`};
 let VPMSG="";
-async function vidCheck(url){let r=null;
-try{const c=new AbortController();r=await fetch(url,{signal:c.signal,cache:"no-store"});c.abort()}catch(e){r=null}
-if(r){if(!(r.status==200||r.status==206))throw new Error(r.status==400||r.status==404||r.status==403?"رابط الفيديو لا يعمل (HTTP "+r.status+"): غالبًا الحاوية media في Supabase ليست Public":"رابط الفيديو لا يعمل (HTTP "+r.status+")");
-const ct=(r.headers.get("content-type")||"").toLowerCase();if(ct&&!/^video\//.test(ct))throw new Error("الخادم يرسل الملف بنوع غير صحيح ("+ct+")")}
-await new Promise((ok,no)=>{const v=document.createElement("video");v.preload="metadata";v.muted=true;v.setAttribute("playsinline","");v.style.cssText="position:fixed;left:-9999px;width:2px;height:2px;opacity:0";document.body.appendChild(v);
-const end=()=>{clearTimeout(t);v.remove()},t=setTimeout(()=>{end();ok()},15000);
-v.onloadedmetadata=()=>{end();ok()};v.onerror=()=>{end();no(new Error("هذا المتصفح لا يستطيع تشغيل الفيديو (ترميز غير مدعوم). حوّله إلى MP4 بترميز H.264 ثم أعد الرفع"))};v.src=url;v.load()})}
+const vidBox=(src)=>{const v=document.createElement("video");v.preload="auto";v.muted=true;v.setAttribute("playsinline","");v.style.cssText="position:fixed;left:-9999px;width:2px;height:2px;opacity:0";document.body.appendChild(v);return v};
+function vidProbe(src){return new Promise(res=>{const v=vidBox();let done=false;const fin=o=>{if(done)return;done=true;clearTimeout(t);v.remove();res(o)},t=setTimeout(()=>fin({ok:true,slow:true}),15000);
+v.onloadedmetadata=()=>fin({ok:true});v.onerror=()=>fin({ok:false,code:v.error&&v.error.code,msg:v.error&&v.error.message});v.src=src;v.load()})}
+const vMime=u=>/\.webm(\?|$)/i.test(u)?"video/webm":"video/mp4";
+async function vidCheck(url){const info=[];let st=null;
+try{const c=new AbortController();const r=await fetch(url,{signal:c.signal,cache:"no-store"});c.abort();st=r.status;info.push("HTTP "+st,"النوع "+((r.headers.get("content-type")||"؟").toLowerCase()))}catch(e){info.push("تعذّر فحص الرأس")}
+if(st&&!(st==200||st==206)){const e=new Error("رابط الفيديو لا يعمل (HTTP "+st+")"+(st==400||st==404||st==403?": غالبًا الحاوية media في Supabase ليست Public":""));e.hard=true;throw e}
+const p=await vidProbe(url);if(p.ok)return "direct";
+let q;try{const r=await TO(fetch(url,{cache:"no-store"}),90000);if(!r.ok)throw new Error("HTTP "+r.status);const u=URL.createObjectURL(new Blob([await r.arrayBuffer()],{type:vMime(url)}));q=await vidProbe(u);URL.revokeObjectURL(u)}catch(e){throw new Error("تعذّر تحميل الفيديو المرفوع للفحص ("+info.join(" · ")+"): "+(e.message||e))}
+if(q.ok)return "blob";throw new Error("الملف المرفوع لا يُقرأ كفيديو ("+info.join(" · ")+" · خطأ "+(p.code||"?")+"). الملف تالف أو ترميزه غير مدعوم")}
+function xhrUp(path,f,ct,tok,vp){return new Promise((ok,no)=>{const x=new XMLHttpRequest();x.open("POST",SB_URL+"/storage/v1/object/media/"+path);x.setRequestHeader("Authorization","Bearer "+tok);x.setRequestHeader("apikey",SB_KEY);x.setRequestHeader("Content-Type",ct);x.setRequestHeader("cache-control","max-age=31536000");
+x.upload.onprogress=e=>{if(e.lengthComputable&&vp)vp.textContent="جارٍ الرفع… "+Math.round(e.loaded/e.total*100)+"٪ (لا تغلق الصفحة)"};x.onload=()=>x.status<300?ok():no(new Error("فشل الرفع ("+x.status+"): "+String(x.responseText).slice(0,120)));x.onerror=()=>no(new Error("انقطع الاتصال أثناء الرفع"));x.send(f)})}
+async function sbUp(path,f,ct){const r=await TO(sb.storage.from("media").upload(path,f,{contentType:ct,upsert:false,cacheControl:"31536000"}),180000);if(r.error)throw r.error}
 async function upVideo(el){const f=el.files[0];if(!f)return;const nm=f.name||"";if(!/^video\//.test(f.type)&&!/\.(mp4|mov|m4v|webm)$/i.test(nm)){toast("اختر ملف فيديو",1);return}if(f.size>50*1024*1024){toast("حجم الفيديو أكبر من 50MB، اضغطه ثم أعد المحاولة",1);return}
-if(VP)return;VP=1;VPMSG="";const vp=$("#vp"),web=/webm/.test(f.type)||/\.webm$/i.test(nm),ext=web?"webm":"mp4",ct=web?"video/webm":"video/mp4",path="how/"+Date.now().toString(36)+"."+ext,prev=S.set.how;let up=false;
+if(VP)return;VP=1;VPMSG="";const vp=$("#vp"),web=/webm/.test(f.type)||/\.webm$/i.test(nm),ext=web?"webm":"mp4",ct=web?"video/webm":"video/mp4",prev=S.set.how,errs=[];
 try{const g=await sb.auth.getSession(),tok=g.data&&g.data.session&&g.data.session.access_token;if(!tok)throw new Error("سجّل الدخول من جديد");
-await new Promise((ok,no)=>{const x=new XMLHttpRequest();x.open("POST",SB_URL+"/storage/v1/object/media/"+path);x.setRequestHeader("Authorization","Bearer "+tok);x.setRequestHeader("apikey",SB_KEY);x.setRequestHeader("Content-Type",ct);x.setRequestHeader("cache-control","max-age=31536000");
-x.upload.onprogress=e=>{if(e.lengthComputable&&vp)vp.textContent="جارٍ الرفع… "+Math.round(e.loaded/e.total*100)+"٪ (لا تغلق الصفحة)"};x.onload=()=>x.status<300?ok():no(new Error("فشل الرفع ("+x.status+"): "+String(x.responseText).slice(0,120)));x.onerror=()=>no(new Error("انقطع الاتصال أثناء الرفع"));x.send(f)});up=true;
-const url=sb.storage.from("media").getPublicUrl(path).data.publicUrl;if(vp)vp.textContent="جارٍ التحقق من أن الفيديو يعمل…";await vidCheck(url);
+if(vp)vp.textContent="جارٍ فحص الملف على جهازك…";const lu=URL.createObjectURL(f),lp=await vidProbe(lu);URL.revokeObjectURL(lu);
+if(!lp.ok)throw new Error("الملف نفسه لا يعمل على هذا الجهاز (خطأ "+(lp.code||"?")+"). حوّله إلى MP4 بترميز H.264 وأعد المحاولة");
+let url=null,path=null,mode="";
+for(const k of [0,1]){const pth="how/"+Date.now().toString(36)+k+"."+ext;let up=false;
+try{if(vp)vp.textContent=k?"جارٍ المحاولة بطريقة رفع أخرى…":"جارٍ الرفع… (لا تغلق الصفحة)";if(k)await sbUp(pth,f,ct);else await xhrUp(pth,f,ct,tok,vp);up=true;
+const u=sb.storage.from("media").getPublicUrl(pth).data.publicUrl;if(vp)vp.textContent="جارٍ التحقق من أن الفيديو يعمل…";mode=await vidCheck(u);url=u;path=pth;break}
+catch(e){errs.push((k?"الطريقة 2: ":"الطريقة 1: ")+((e&&e.message)||e));if(up)try{await sb.storage.from("media").remove([pth])}catch(x){}if(e&&e.hard)break}}
+if(!url)throw new Error(errs.join("\n"));
 const old=(prev||{}).path;S.set.how={video:url,path};await TO(S.db.collection("settings").doc("main").set(S.set),30000);
-if(old)try{await sb.storage.from("media").remove([old])}catch(e){}toast("تم رفع الفيديو وهو يعمل ✔")}
-catch(e){S.set.how=prev||{};VPMSG=(e&&e.message)||String(e);if(up)try{await sb.storage.from("media").remove([path])}catch(x){}toast("تعذّر رفع الفيديو: "+VPMSG,1)}finally{VP=0;route(1)}}
-async function vidTest(){const u=(S.set.how||{}).video;if(!u)return;toast("جارٍ الفحص…",0,1);try{await vidCheck(u);VPMSG="";toast("الفيديو سليم ويعمل ✔")}catch(e){VPMSG=e.message;toast("مشكلة: "+e.message,1)}route(1)}
-function vidFail(v){if(v._f)return;v._f=1;const d=document.createElement("div");d.className="err";d.textContent="تعذّر تشغيل الفيديو. ";const a=document.createElement("a");a.href=v.currentSrc||v.src;a.target="_blank";a.rel="noopener";a.textContent="افتحه في تبويب جديد";d.appendChild(a);v.insertAdjacentElement("afterend",d)}
+if(old)try{await sb.storage.from("media").remove([old])}catch(e){}toast("تم رفع الفيديو وهو يعمل ✔"+(mode=="blob"?" (وضع التوافق)":""))}
+catch(e){S.set.how=prev||{};VPMSG=(e&&e.message)||String(e);toast("تعذّر رفع الفيديو: "+VPMSG.split("\n")[0],1)}finally{VP=0;route(1)}}
+async function vidTest(){const u=(S.set.how||{}).video;if(!u)return;toast("جارٍ الفحص…",0,1);try{const m=await vidCheck(u);VPMSG="";toast("الفيديو سليم ويعمل ✔"+(m=="blob"?" (وضع التوافق)":""))}catch(e){VPMSG=e.message;toast("مشكلة: "+e.message,1)}route(1)}
+function vidMsg(v,src){if(v._m)return;v._m=1;const d=document.createElement("div");d.className="err";d.textContent="تعذّر تشغيل الفيديو. ";const a=document.createElement("a");a.href=src;a.target="_blank";a.rel="noopener";a.textContent="افتحه في تبويب جديد";d.appendChild(a);v.insertAdjacentElement("afterend",d)}
+async function vidFail(v){if(v._f)return;v._f=1;const src=v.currentSrc||v.src;try{const r=await fetch(src);if(!r.ok)throw 0;const b=new Blob([await r.arrayBuffer()],{type:vMime(src)});v.onerror=()=>vidMsg(v,src);v.src=URL.createObjectURL(b);v.load()}catch(e){vidMsg(v,src)}}
 function delVideo(){if(!confirm("حذف الفيديو؟"))return;return act("جارٍ الحذف…",async()=>{const p=(S.set.how||{}).path;S.set.how={};await S.db.collection("settings").doc("main").set(S.set);if(p)try{await sb.storage.from("media").remove([p])}catch(e){}route(1)})}
 window._rd=7;
 A.growth=()=>{const o=S.set.opts||{},days=+window._rd||7,since=Date.now()-days*864e5,C=S.orders.filter(x=>x.payStatus=="confirmed"&&x.ts>=since),Pn=S.orders.filter(x=>x.payStatus=="pending").length,rev=C.reduce((a,x)=>a+(+x.total||0),0),cnt={};C.forEach(x=>(x.items||[]).forEach(i=>cnt[i.name]=(cnt[i.name]||0)+i.q));
