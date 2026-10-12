@@ -143,7 +143,10 @@ h2{border-inline-start-color:var(--gold)}
 .grid{max-width:1100px;margin-inline:auto;justify-content:center}
 @media(max-width:600px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.card img.p{max-height:140px!important}.card .btn{font-size:12px!important;padding:6px 8px!important}}
 .card{text-align:center;align-items:stretch}
-.card img.p{object-fit:cover}
+.card img.p{object-fit:contain!important;background:#fff!important;max-height:none!important;padding:4px}
+.ci img{object-fit:contain!important;background:#fff}
+.imgcover .card img.p{object-fit:cover!important;padding:0}
+.sz .chip{direction:ltr;unicode-bidi:isolate}
 </style></head><body>
 <div id="ann" hidden></div><a id="wf" hidden></a>
 <header><div class="row"><div class="logo" onclick="route(1)">MC<small>للعطور · MC PERFUMES</small></div><div class="sp"></div><b style="color:var(--gold);font-size:15px">لوحة الإدارة · v5</b><span hidden><button id="lg"></button><span id="fc">0</span><span id="cc">0</span><a id="adm" style="display:none"><span class="nb" hidden>0</span></a></span></div>
@@ -215,13 +218,13 @@ V.p=id=>{const p=S.prods.find(x=>x.id==id);if(!p)return `<div class="box">الع
 return `<div class="two"><div>${(p.imgs||[PH]).map((u,k)=>`<img class="p" style="width:100%;border-radius:12px;margin-bottom:8px" ${k?'loading="lazy" ':""}decoding="async" src="${E(u)}">`).join("")}</div><div>
 <h1 style="margin:0">${E(p.name)}</h1><div class="ok">عطر أصلي 100٪</div><div class="mu">${E(p.brand)} · ${E(p.cat||"")}</div><p>${E(p.desc||"")}</p>${p.notes?`<p><b>النوتات العطرية:</b> ${E(p.notes)}</p>`:""}
 <div class="sz">${p.sizes.map((z,k)=>`<span class="chip ${k==sel.i?"on":""}" onclick="sel.i=${k};sel.q=1;route(1)">${z.ml} ml</span>`).join("")}</div>
-<div class="pr" style="font-size:22px;margin-top:8px">${m(s.price)}</div><div class="fr">التوصيل مجاني</div>${((!av&&barP(p))||barSP(p))?`<div class="box" style="background:var(--bg);margin:8px 0;font-weight:700">🚚 الشحن إليك يستغرق من 10 إلى 14 يومًا كحد أقصى.</div>`:""}<div class="mu">${av?stT(s):"غير متوفر حاليًا"}</div>
+<div class="pr" style="font-size:22px;margin-top:8px">${m(s.price)}</div><div class="fr">التوصيل مجاني</div>${((!av&&barP(p))||barSP(p))?`<div class="box shipnote" style="background:var(--bg);margin:8px 0;font-weight:700">🚚 الشحن إليك يستغرق من 10 إلى 14 يومًا كحد أقصى.</div>`:""}<div class="mu">${av?stT(s):"غير متوفر حاليًا"}</div>
 <div class="qt" style="margin:10px 0"><button onclick="sel.q=Math.max(1,sel.q-1);route(1)">−</button><b>${sel.q}</b><button onclick="sel.q=Math.min(${s.pre?5:(+s.stock||(barP(p)?5:1))},sel.q+1);route(1)">+</button></div><br>
-${(!av&&barP(p)&&!preOff())?`<div class="box" style="background:var(--bg)"><b>بار كوماند</b><br>${E(preMsg())}</div><button class="btn k" onclick="pre('${p.id}',${sel.i},sel.q);go('checkout')">اطلبه الآن</button> <button class="btn o" onclick="pre('${p.id}',${sel.i},sel.q)">أضف إلى السلة</button><br><div class="badge badge-bar">${SN('bar')}</div>`:`<button class="btn" ${av?"":"disabled"} onclick="add('${p.id}',${sel.i},sel.q)">أضف إلى السلة</button> <button class="btn k" ${av?"":"disabled"} onclick="add('${p.id}',${sel.i},sel.q);go('checkout')">اشتر الآن</button>${av?`<div class="badge badge-ready">${SN('ready')}</div>`:""}`}${pExtras(p,av)}</div></div><h2>منتجات مشابهة</h2>${grid(sim)}`};
+${(!av&&barP(p)&&!preOff())?`<div class="box prebox" style="background:var(--bg)"><b>بار كوماند</b><br>${E(preMsg())}</div><button class="btn k" onclick="pre('${p.id}',${sel.i},sel.q);go('checkout')">اطلبه الآن</button> <button class="btn o" onclick="pre('${p.id}',${sel.i},sel.q)">أضف إلى السلة</button><br><div class="badge badge-bar">${SN('bar')}</div>`:`<button class="btn" ${av?"":"disabled"} onclick="add('${p.id}',${sel.i},sel.q)">أضف إلى السلة</button> <button class="btn k" ${av?"":"disabled"} onclick="add('${p.id}',${sel.i},sel.q);go('checkout')">اشتر الآن</button>${av?`<div class="badge badge-ready">${SN('ready')}</div>`:""}`}${pExtras(p,av)}</div></div><div class="simbox"><h2>منتجات مشابهة</h2>${grid(sim)}</div>`};
 
 function pExtras(p,av){const u="'"+p.id+"'";
 return `<div class="row" style="margin-top:10px"><button class="btn o" onclick="shareP(${u})">مشاركة على واتساب</button><button class="btn o" onclick="copyL(${u})">نسخ الرابط</button></div>
-${av?"":`<div class="box" style="margin-top:10px"><b>أعلمني عند التوفر</b><div class="mu">اكتب رقم تواصلك (8 أرقام) وسنخبرك عند توفر العطر.</div><div class="row"><input id="nmx" inputmode="numeric" maxlength="8" dir="ltr" placeholder="8 أرقام" oninput="this.value=this.value.replace(/\D/g,'').slice(0,8)"><button class="btn" onclick="notifyMe(${u})">أعلمني</button></div></div>`}
+${av?"":`<div class="box notifybox" style="margin-top:10px"><b>أعلمني عند التوفر</b><div class="mu">اكتب رقم تواصلك (8 أرقام) وسنخبرك عند توفر العطر.</div><div class="row"><input id="nmx" inputmode="numeric" maxlength="8" dir="ltr" placeholder="8 أرقام" oninput="this.value=this.value.replace(/\D/g,'').slice(0,8)"><button class="btn" onclick="notifyMe(${u})">أعلمني</button></div></div>`}
 <div id="rvw" style="margin-top:14px"></div>`}
 function shareP(id){const p=S.prods.find(x=>x.id==id);if(!p)return;window.open("https://wa.me/?text="+encodeURIComponent(p.name+" — عطر أصلي 100٪\n"+location.origin+"/#p/"+id),"_blank")}
 function copyTxt(t,okm){const fb=()=>{try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;top:0;opacity:0';document.body.appendChild(a);a.focus();a.select();const r=document.execCommand('copy');a.remove();toast(r?(okm||'تم النسخ'):t,!r)}catch(e){toast(t)}};try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast(okm||'تم النسخ'),fb);else fb()}catch(e){fb()}}
@@ -282,7 +285,7 @@ catch(x){tsReset();sbn.disabled=false;sbn.textContent="إرسال الطلب";to
 V.done=()=>{let o;try{o=JSON.parse(sessionStorage.getItem("last"))}catch(e){}if(!o)return `<div class="box">لا يوجد طلب.</div>`;const num=waNum(S.set.social.whatsapp||"26822281");
 const msg=`طلب رقم ${o.id}\nالاسم: ${o.n}\nالعنوان: ${o.a}${o.c?"\nرقم التواصل: "+o.c:""}\nالمنتجات: ${o.it.map(i=>`${i.name} ${i.ml}ml ×${i.q}`).join("، ")}\nالإجمالي: ${o.t}${CUR}\nوسيلة الدفع: ${o.m}${o.p?"\nالرقم الذي تم الدفع منه: "+o.p:""}${o.pr?"\nبار كوماند: المدفوع الآن "+o.d+" والباقي عند الاستلام "+o.r:""}`;
 return `<div class="box"><h2>تم استلام طلبك بنجاح</h2><p>تم استلام طلبك بنجاح، وسيتم التحقق من وصل الدفع قبل تأكيد الطلب وتجهيزه للتوصيل.</p><p>رقم الطلب: <b>${o.id}</b><br>الإجمالي: <b>${m(o.t)}</b> (التوصيل مجاني)</p>${o.pr?`<p><b>بار كوماند:</b> المدفوع الآن <b>${m(o.d)}</b>، والمتبقي عند الاستلام <b>${m(o.r)}</b>.<br>${E(preMsg())}</p>`:""}
-<a class="btn" target="_blank" rel="noopener" href="https://wa.me/${num}?text=${encodeURIComponent(msg)}">فتح واتساب (اختياري)</a> <a class="btn o" onclick="go('track?id=${o.id}')">تتبع طلبك</a><p class="mu">فتح واتساب لا يعني إرسال الرسالة ولا تأكيد الدفع.</p></div>`};
+<a class="btn wadone" target="_blank" rel="noopener" href="https://wa.me/${num}?text=${encodeURIComponent(msg)}">فتح واتساب (اختياري)</a> <a class="btn o" onclick="go('track?id=${o.id}')">تتبع طلبك</a><p class="mu">فتح واتساب لا يعني إرسال الرسالة ولا تأكيد الدفع.</p></div>`};
 
 V.track=()=>{const q=new URLSearchParams((location.hash.split("?")[1])||"");let c="";try{c=sessionStorage.getItem("tk_c")||""}catch(e){}
 return `<div class="box"><h2>تتبع طلبك</h2><label class="lbl">رقم الطلب</label><input class="f" id="tk_id" dir="ltr" placeholder="MC12345678" value="${E(q.get("id")||"")}"><label class="lbl">رقم التواصل (8 أرقام)</label><input class="f" id="tk_c" dir="ltr" inputmode="numeric" maxlength="8" oninput="this.value=this.value.replace(/\D/g,'').slice(0,8)" value="${E(c)}"><br><br><button class="btn" onclick="doTrack()">تتبع</button><div id="trk"></div></div>`};
@@ -532,7 +535,7 @@ const preOff=()=>(S.set.opts||{}).preOff,prePct=()=>Math.min(100,Math.max(1,+(S.
 const preMsg=()=>{const o=S.set.opts||{},pc=prePct();return o.preMsg||"طلبات بار كوماند: التوصيل يستغرق من 10 أيام إلى 14 يومًا كحد أقصى. يجب دفع "+(pc==50?"نصف المبلغ":pc+"٪ من المبلغ")+" الآن، والباقي عند الاستلام."};
 const preSum=()=>cartLines().filter(l=>l.c.pre).reduce((a,l)=>a+l.t,0),dueNow=()=>Math.max(0,Math.round(sum()-CPN.disc-preSum()+preSum()*prePct()/100));
 const MTc=()=>MT().filter(x=>!preSum()||x.req!==false);
-function preBlock(){if(!preSum())return"";return `<div class="box" style="background:var(--bg)"><b>بار كوماند</b><br>${E(preMsg())}<br>المطلوب دفعه الآن: <b>${m(dueNow())}</b><br>المتبقي عند الاستلام: <b>${m(sum()-dueNow())}</b></div>`}
+function preBlock(){if(!preSum())return"";return `<div class="box prebox" style="background:var(--bg)"><b>بار كوماند</b><br>${E(preMsg())}<br>المطلوب دفعه الآن: <b>${m(dueNow())}</b><br>المتبقي عند الاستلام: <b>${m(sum()-dueNow())}</b></div>`}
 function pre(id,i,q=1){const p=S.prods.find(x=>x.id==id),s=p&&p.sizes[i];if(!s)return;const l=S.cart.find(c=>c.id==id&&c.i==i&&c.pre);l?l.q+=q:S.cart.push({id,i,q,pre:true});save();toast("تمت إضافة الطلب المسبق إلى السلة")}
 const stT=s=>(S.set.opts||{}).hideStock?"متوفر":"متوفر: "+s.stock+" قطعة";
 
@@ -555,7 +558,7 @@ function applyRepl(skipApp){const R=(S.set.repl||[]).filter(x=>x.a);if(!R.length
 const f=(v)=>{R.forEach(x=>{v=v.split(x.a).join(x.b)});return v};
 roots.forEach(n=>{const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT);let t;while(t=w.nextNode()){if(t._o===undefined)t._o=t.nodeValue;const v=f(t._o);if(v!==t.nodeValue)t.nodeValue=v}
 n.querySelectorAll("[placeholder]").forEach(e=>{if(e._p===undefined)e._p=e.getAttribute("placeholder");e.setAttribute("placeholder",f(e._p))})})}
-function applySite(){const x=S.set.site||{},o=S.set.opts||{},r=document.documentElement.style;applyAn();
+function applySite(){applyHui();const x=S.set.site||{},o=S.set.opts||{},r=document.documentElement.style;applyAn();
 const OLDC=/^#(b8924a|c6a355|b08a3e|c9a252|0d0d0d|111111|111|17181c)$/i,gg=x.gold&&!OLDC.test(x.gold)?x.gold:"",ii=x.ink&&!OLDC.test(x.ink)?x.ink:"";gg?r.setProperty("--gold",gg):r.removeProperty("--gold");ii?r.setProperty("--ink",ii):r.removeProperty("--ink");
 const lg=$(".logo");lg.innerHTML=(x.logo?`<img src="${E(x.logo)}" style="height:${+x.logoH||40}px">`:"")+((x.logo&&x.hideTxt)?"":`<div>${E(x.title||"MC")}<small>${E(x.sub||"للعطور · MC PERFUMES")}</small></div>`);
 lg.style.display=x.logo?"flex":"";lg.style.alignItems="center";lg.style.gap="8px";
@@ -577,8 +580,56 @@ function rDel(k){readRepl();S.set.repl.splice(k,1);route(1)}
 A.texts=()=>`<div class="box"><b>تغيير أي نص في الموقع</b><div class="mu">اكتب النص كما يظهر في الموقع (أو اختره من القائمة)، ثم اكتب النص الجديد. يعمل على العناوين والأزرار والقوائم في كل الصفحات. اتركه فارغًا لحذف النص.</div>
 <datalist id="cm">${COMMON.map(c=>`<option value="${E(c)}">`).join("")}</datalist><div id="rlist">${(S.set.repl||[]).map((x,k)=>`<div class="box rrow"><input class="ra f" list="cm" placeholder="النص الأصلي" value="${E(x.a)}"><input class="rb f" style="margin-top:6px" placeholder="النص الجديد" value="${E(x.b)}"><button class="btn r" style="margin-top:6px" onclick="rDel(${k})">حذف</button></div>`).join("")}</div>
 <button class="btn o" onclick="rAdd()">+ إضافة تغيير نص</button><br><br><button class="btn" onclick="saveS()">حفظ</button></div>`;
+const SECS_=0;
+const HUIG=[
+["القوائم والشريط العلوي",[
+["n_home","الرئيسية",['nav a[data-r="home"]',"footer a[onclick=\"go('')\"]"]],
+["n_shop","جميع العطور",['nav a[data-r="shop"]',"footer a[onclick=\"go('shop')\"]"]],
+["n_cats","التصنيفات",['nav a[data-r="cats"]',"footer a[onclick=\"go('cats')\"]"]],
+["n_brands","الماركات",['nav a[data-r="brands"]',"footer a[onclick=\"go('brands')\"]"]],
+["n_offers","العروض",['nav a[data-r="offers"]',"footer a[onclick=\"go('offers')\"]"]],
+["n_how","كيف تطلب",['nav a[data-r="how"]',"footer a[onclick=\"go('how')\"]"]],
+["n_track","تتبع طلبك",['nav a[data-r="track"]',"footer a[onclick=\"go('track')\"]"]],
+["n_about","من نحن",['nav a[data-r="about"]',"footer a[onclick=\"go('about')\"]"]],
+["n_contact","تواصل معنا",['nav a[data-r="contact"]',"footer a[onclick=\"go('contact')\"]"]],
+["n_fav","زر المفضلة (القلب)",["header .ib[onclick=\"go('favs')\"]"]],
+["n_lang","زر تبديل اللغة (FR)",["#lg"]],
+["n_search","خانة البحث",["#q","#sg"]]]],
+["الصفحة الرئيسية",[
+["h_hero","اللوحة الرئيسية (العنوان والأزرار)",[".hero"]],
+["h_feat","شريط المزايا (أصلي، أحجام، دفع، توصيل)",[".feat"]],
+["h_chips","أزرار التصنيفات السريعة",[".chips"]]]],
+["صفحة جميع العطور (الفلاتر)",[
+["s_cat","قائمة التصنيفات",['#app select[onchange^="setCat"]']],
+["s_brand","قائمة الماركات",['#app select[onchange^="S.f.brand"]']],
+["s_ml","قائمة الأحجام",['#app select[onchange^="S.f.ml="]']],
+["s_max","خانة أقصى سعر",['#app input[onchange^="S.f.max"]']],
+["s_av","خيار «المتوفر فقط»",['#app label:has(> input[onchange^="S.f.av"])']],
+["s_sort","قائمة الترتيب",['#app select[onchange^="S.f.o="]']]]],
+["البطاقات وصفحة العطر",[
+["p_orig","عبارة «عطر أصلي 100٪»",["#app .card .ok","#app .two .ok"]],
+["p_free","سطر «التوصيل مجاني»",["#app .fr"]],
+["p_ship","ملاحظة مدة الشحن (بار كوماند)",["#app .shipnote"]],
+["p_prebox","صندوق شرح بار كوماند والدفع",["#app .prebox"]],
+["p_share","أزرار المشاركة (واتساب ونسخ الرابط)",['#app button[onclick^="shareP"]','#app button[onclick^="copyL"]']],
+["p_notify","صندوق «أعلمني عند التوفر»",["#app .notifybox"]],
+["p_rev","التقييمات",["#rvw"]],
+["p_sim","المنتجات المشابهة",["#app .simbox"]]]],
+["الطلب والدفع وما بعده",[
+["c_hint","جملة «رفع الوصل لا يعني تأكيد الدفع»",["#app #sb+p.mu"]],
+["d_wa","زر «فتح واتساب» بعد الطلب",["#app .wadone"]]]],
+["التذييل (أسفل الموقع)",[
+["f_all","التذييل كاملًا",["footer"]],
+["f_priv","رابط سياسة الخصوصية",["footer a[onclick=\"go('pg:privacy')\"]"]],
+["f_terms","رابط الشروط والأحكام",["footer a[onclick=\"go('pg:terms')\"]"]],
+["f_ret","رابط سياسة الاستبدال والإرجاع",["footer a[onclick=\"go('pg:returns')\"]"]]]]
+];
+const HUI=HUIG.flatMap(g=>g[1]);
+function applyHui(){let st=document.getElementById("hui");if(!st){st=document.createElement("style");st.id="hui";document.head.appendChild(st)}const o=S.set.opts||{},h=o.hui||{};
+st.textContent=IS_ADMIN?"":HUI.filter(x=>h[x[0]]).map(x=>x[2].map(q=>q+"{display:none!important}").join("\n")).join("\n");
+document.documentElement.classList.toggle("imgcover",!!o.imgCover&&!IS_ADMIN)}
 const SECS={ready:"جاهز للاستلام (القسم الأول)",bar:"متاح على باركوماند (القسم الثاني)",best:"الأكثر مبيعًا",new:"المضافة حديثًا",sale:"العروض والخصومات",full:"العطور الكاملة",ml10:"عطور مقسّمة 10 مل",ml5:"عطور مقسّمة 5 مل"};
-function readOpts(){const o=S.set.opts=S.set.opts||{};if(!$("#op_wa"))return;o.wa=$("#op_wa").checked;o.annOn=$("#op_annOn").checked;o.ann=$("#op_ann").value.trim();o.maint=$("#op_maint").checked;o.maintMsg=$("#op_mmsg").value.trim();o.note=$("#op_note").checked;o.min=+$("#op_min").value||0;o.hideStock=$("#op_hs").checked;o.preOff=$("#op_poff").checked;o.prePct=+$("#op_ppct").value||50;o.preMsg=$("#op_pmsg").value.trim();o.hide={};Object.keys(SECS).forEach(k=>o.hide[k]=$("#oh_"+k).checked)}
+function readOpts(){const o=S.set.opts=S.set.opts||{};if(!$("#op_wa"))return;o.wa=$("#op_wa").checked;o.annOn=$("#op_annOn").checked;o.ann=$("#op_ann").value.trim();o.maint=$("#op_maint").checked;o.maintMsg=$("#op_mmsg").value.trim();o.note=$("#op_note").checked;o.min=+$("#op_min").value||0;o.hideStock=$("#op_hs").checked;o.preOff=$("#op_poff").checked;o.prePct=+$("#op_ppct").value||50;o.preMsg=$("#op_pmsg").value.trim();o.hide={};Object.keys(SECS).forEach(k=>o.hide[k]=$("#oh_"+k).checked);o.hui={};HUI.forEach(x=>{const e=$("#hu_"+x[0]);if(e&&e.checked)o.hui[x[0]]=1});{const e=$("#op_ic");o.imgCover=!!(e&&e.checked)}}
 A.opts=()=>{const o=S.set.opts||{};return `<div class="box"><b>خيارات إضافية</b><div class="mu">كلها متوقفة افتراضيًا ولا تظهر للعملاء إلا بعد موافقتك: فعّل ما تريد ثم اضغط حفظ.</div>
 <p><label><input type="checkbox" id="op_wa" ${o.wa?"checked":""}> زر واتساب عائم في كل الصفحات</label></p>
 <p><label><input type="checkbox" id="op_annOn" ${o.annOn?"checked":""}> شريط إعلان أعلى الموقع</label><br><input class="f" id="op_ann" placeholder="نص الإعلان" value="${E(o.ann||"")}"></p>
@@ -587,6 +638,8 @@ A.opts=()=>{const o=S.set.opts||{};return `<div class="box"><b>خيارات إض
 <p><label>الحد الأدنى لقيمة الطلب (0 = بدون)</label><br><input type="number" min="0" id="op_min" value="${o.min||0}"></p>
 <p><b>الطلب المسبق لعطور باركوماند</b><br><label><input type="checkbox" id="op_poff" ${o.preOff?"checked":""}> إيقاف الطلب المسبق (يرجع الزر "غير متوفر")</label><br><label>النسبة المدفوعة الآن ٪</label> <input type="number" min="1" max="100" id="op_ppct" value="${o.prePct||50}" style="width:80px"><br><textarea class="f" id="op_pmsg" rows="3" placeholder="رسالة تظهر للعميل (اتركها فارغة للنص الافتراضي)">${E(o.preMsg||"")}</textarea></p>
 <p><b>إخفاء أقسام الرئيسية</b>${Object.keys(SECS).map(k=>`<br><label><input type="checkbox" id="oh_${k}" ${(o.hide||{})[k]?"checked":""}> إخفاء قسم ${SECS[k]}</label>`).join("")}</p>
+<div><b>إخفاء وإظهار عناصر الواجهة</b><div class="mu">ضع علامة على أي عنصر لإخفائه عن العملاء، وأزل العلامة لإظهاره من جديد، ثم اضغط حفظ. لا يتأثر بذلك عرض لوحة الإدارة.</div>${HUIG.map(g=>`<details style="margin:6px 0"><summary><b>${g[0]}</b></summary>${g[1].map(x=>`<label style="display:block;margin:4px 0"><input type="checkbox" id="hu_${x[0]}" ${(o.hui||{})[x[0]]?"checked":""}> إخفاء ${x[1]}</label>`).join("")}</details>`).join("")}<div class="mu">الاسم والعنوان ورقم التواصل ووسيلة الدفع حقول أساسية لاستلام الطلب فلا يمكن إخفاؤها. أما «الرقم الذي سيتم الدفع منه» و«وصل الدفع» فيتحكم بهما كل وسيلة دفع من تبويب «الدفع والتواصل».</div></div>
+<p><b>صور العطور</b><br><label><input type="checkbox" id="op_ic" ${o.imgCover?"checked":""}> قصّ الصورة لتملأ البطاقة (الافتراضي: تظهر العطر كاملًا دون قص)</label></p>
 <p><label><input type="checkbox" id="op_maint" ${o.maint?"checked":""}> وضع الصيانة (يُغلق الموقع للزوار، وتبقى لوحة الإدارة تعمل)</label><br><input class="f" id="op_mmsg" placeholder="رسالة الصيانة" value="${E(o.maintMsg||"")}"></p><button class="btn" onclick="saveS()">حفظ</button></div>`};
 async function saveS(){
 if(at=="pay"){readPay();const ms=S.set.methods.filter(x=>x.name),nn=ms.map(x=>x.name);if(new Set(nn).size!=nn.length)return toast("يوجد اسمان متشابهان في وسائل الدفع");if(!ms.length)return toast("أضف وسيلة دفع واحدة على الأقل");S.set.methods=ms;
