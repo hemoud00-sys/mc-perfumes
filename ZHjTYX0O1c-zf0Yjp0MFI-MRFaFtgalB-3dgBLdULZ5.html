@@ -174,6 +174,7 @@ a.btn{text-decoration:none;display:inline-block}@media(max-width:600px){.savebar
 .pay label.on{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 8%,var(--card));box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 25%,transparent)}.pay input{accent-color:var(--gold)}
 .upl{display:flex;align-items:center;justify-content:center;border:2px dashed var(--br);border-radius:14px;padding:16px;cursor:pointer;color:var(--mu);font-weight:600;transition:.15s;text-align:center}.upl:hover{border-color:var(--gold);color:var(--goldd)}
 .pinw{display:flex;gap:6px;align-items:center;margin-top:6px}.pinw input{flex:1;min-width:0;letter-spacing:8px;font-size:18px;text-align:center}.pinb{border:1px solid var(--br);background:var(--card);color:var(--tx);border-radius:12px;padding:10px 12px;cursor:pointer;font:inherit;font-size:13px;flex:none}
+.ckinfo{background:var(--bg);border:1px solid var(--br);border-radius:14px;padding:6px 12px 10px;margin-top:8px}.ckrow{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--br);align-items:baseline}.ckrow:last-of-type{border-bottom:0}.ckrow span{color:var(--mu);font-size:13px;min-width:62px;flex:none}.ckrow b{flex:1;min-width:0;overflow-wrap:anywhere;white-space:pre-line;font-weight:700}.ckinfo .btn{margin-top:4px}
 .ckbtn{width:100%;padding:14px!important;font-size:16px!important;margin-top:8px;font-weight:800}
 .cksum .ci img{width:44px;height:44px}
 @media(min-width:760px){.cksum{position:sticky;top:160px;align-self:start}}
@@ -324,11 +325,14 @@ if(L.some(l=>l.na))return `<div class="box"><div class="err">بعض العطور
 if(pm&&!MTc().some(x=>x.name==pm))pm="";if(!pm&&MTc().length==1)pm=MTc()[0].name;if(!pm&&CA.t&&CA.p&&CA.p.method&&ACC().fill&&MTc().some(x=>x.name==CA.p.method))pm=CA.p.method;
 const A=ACC(),logged=!!CA.t,needPin=pgOn("account")&&!CA.off&&!logged,P=(logged&&A.fill&&CA.p)||{},ph=(logged&&CA.p&&CA.p.phone)||"",n=L.reduce((a,l)=>a+l.c.q,0),sec=(i,t)=>`<div class="cks"><span>${i}</span>${t}</div>`;
 return `<h2>إتمام الطلب</h2><div class="two"><div class="box">
-${logged?`<div class="ckacc">✔ أنت داخل حسابك <b dir="ltr">${E(ph)}</b>${A.fill&&(P.name||P.addr)?" — بياناتك مكتوبة مسبقًا، راجعها فقط.":""} <a onclick="caOut()">ليس أنت؟</a></div>`:""}
+${logged?`<div class="ckacc">✔ أنت داخل حسابك <b dir="ltr">${E(ph)}</b> <a onclick="caOut()">ليس أنت؟</a></div>`:""}
 ${sec(1,"بياناتك")}
+${logged?`<div class="ckinfo" id="ckview" ${P.name&&P.addr?"":"hidden"}><div class="ckrow"><span>الاسم</span><b id="cv_n">${E(P.name||"")}</b></div><div class="ckrow"><span>الهاتف</span><b dir="ltr">${E(ph)}</b></div><div class="ckrow"><span>العنوان</span><b id="cv_a">${E(P.addr||"")}</b></div><button type="button" class="btn o" onclick="ckEdit(1)">✏️ تعديل بياناتي</button></div>`:""}
+<div id="ckedit" ${logged&&P.name&&P.addr?"hidden":""}>
 <label class="lbl">الاسم *</label><input class="f" id="cn" autocomplete="name" value="${E(P.name||"")}"><div class="err" id="e1"></div>
 <label class="lbl">رقم الهاتف (8 أرقام) *</label><input class="f" id="ct" type="tel" inputmode="numeric" maxlength="8" dir="ltr" placeholder="8 أرقام" autocomplete="tel-national" oninput="numIn(this)" value="${E(ph)}" ${logged?'readonly style="background:var(--bg)"':""}><div class="err" id="e6"></div>
 <label class="lbl">العنوان بالتفصيل *</label><textarea class="f" id="ca" rows="2" placeholder="الحي، الشارع، أقرب معلم…" autocomplete="street-address">${E(P.addr||"")}</textarea><div class="err" id="e2"></div>
+${logged?`<div class="row" style="margin-top:6px"><button type="button" class="btn" onclick="ckSaveInfo()">حفظ البيانات</button>${P.name&&P.addr?'<button type="button" class="btn o" onclick="ckEdit(0)">إلغاء</button>':""}</div><div id="ckimsg" class="err"></div>`:""}</div>
 ${(S.set.opts||{}).note?`<label class="lbl">ملاحظات على الطلب (اختياري)</label><textarea class="f" id="cnote" rows="2"></textarea>`:""}
 ${sec(2,"الدفع")}
 <div class="pay">${MTc().map((x,k)=>`<label class="${pm==x.name?"on":""}"><input type="radio" name="pm" ${pm==x.name?"checked":""} onchange="pm=MTc()[${k}].name;document.querySelectorAll('.pay label').forEach(l=>l.classList.toggle('on',l.contains(this)));payInfo()"> ${E(x.name)}</label>`).join("")}</div><div class="err" id="e4"></div><div id="pi"></div>
@@ -364,12 +368,17 @@ function shrink(file,max,qual){return new Promise((ok,no)=>{const r=new FileRead
 async function pick(el){const f=el.files[0];rc=null;$("#e5").textContent="";if(!f)return;if(!/^image\/(jpeg|png|webp)$/.test(f.type)){$("#e5").textContent="صيغة غير مدعومة (JPG/PNG/WEBP فقط)";return}if(f.size>8e6){$("#e5").textContent="الحجم أكبر من 8MB";return}
 try{rc=await shrink(f,1000,.7);if(rc.length>200000)rc=await shrink(f,700,.55);$("#fi").textContent="✔ "+f.name+" – اكتمل الرفع";$("#pv").src=rc;$("#pv").hidden=false}catch(e){$("#e5").textContent="تعذّرت قراءة الصورة"}}
 function numIn(el){const eid=el.id=="ct"?"#e6":"#e3",x=$(eid);let v=el.value.replace(/[\u0660-\u0669]/g,c=>c.charCodeAt(0)-1632).replace(/[\u06F0-\u06F9]/g,c=>c.charCodeAt(0)-1776);const bad=/[^0-9]/.test(v);v=v.replace(/[^0-9]/g,"").slice(0,8);el.value=v;if(x)x.textContent=bad?"يجب كتابة النص رقميًا (أرقام فقط)":(v.length&&v.length<8?"يجب كتابة 8 أرقام بالضبط":"")}
+/* بيانات العميل المسجّل في صفحة الطلب: بطاقة مرتبة، والتعديل داخل نفس القائمة */
+function ckEdit(on){const v=$("#ckview"),e=$("#ckedit");if(!e)return;if(v)v.hidden=!!on;e.hidden=!on;if(on){const n=$("#cn");if(n)n.focus()}}
+async function ckSaveInfo(){const n=String(($("#cn")||{}).value||"").trim(),a=String(($("#ca")||{}).value||"").trim(),M=t=>{const x=$("#ckimsg");if(x)x.textContent=t};if(!n)return M("اكتب الاسم");if(!a)return M("اكتب العنوان");M("");
+if(CA.t){try{await caRpc("cust_save_profile",{p_token:CA.t,p_name:n.slice(0,60),p_addr:a.slice(0,300),p_pay_no:null,p_method:null})}catch(e){}CA.p={...(CA.p||{}),name:n,addr:a};caSave()}
+const cn=$("#cv_n"),ca=$("#cv_a");if(cn)cn.textContent=n;if(ca)ca.textContent=a;ckEdit(0);toast("تم حفظ بياناتك ✔")}
 function pinEye(b,id){const i=document.getElementById(id);if(!i)return;i.type=i.type=="password"?"text":"password";b.textContent=i.type=="password"?"إظهار":"إخفاء"}
 async function submit(){const n=$("#cn").value.trim(),a0=$("#ca").value.trim(),nt=($("#cnote")||{}).value,a=a0+(nt&&nt.trim()?"\nملاحظات: "+nt.trim():""),ct=($("#ct")||{}).value||"",p=($("#cp")||{}).value||"",pin=dig(($("#cpin")||{}).value);let bad=0;const e=(i,t)=>{const x=$("#e"+i);if(x)x.textContent=t;if(t)bad=1},rq=reqR(),needPin=!!$("#cpin")&&!CA.t&&!CA.off;
 e(1,n?"":"الاسم مطلوب");e(2,a0?"":"العنوان مطلوب");e(6,/^[0-9]{8}$/.test(ct)?"":"رقم الهاتف 8 أرقام بالضبط");e(3,!rq||/^[0-9]{8}$/.test(p)?"":"رقم الدفع 8 أرقام بالضبط");e(4,pm?"":"اختر وسيلة الدفع");e(5,rc||!rq?"":"صورة وصل الدفع مطلوبة");
 const isNew=!!CA.ckNew&&CA.ckPh==ct,pin2=dig(($("#cpin2")||{}).value);
 if(needPin){e(7,/^[0-9]{6}$/.test(pin)?"":"اكتب الرمز السري (6 أرقام) — إلزامي لإرسال الطلب");if(isNew)e(8,pin2===pin?"":"الرمزان غير متطابقين، اكتب نفس الرمز مرة ثانية")}
-if(bad){const f=document.querySelector(".err:not(:empty)");if(f&&f.scrollIntoView)f.scrollIntoView({block:"center",behavior:"smooth"});return}
+if(bad){if(["e1","e2","e6"].some(i=>($("#"+i)||{}).textContent))ckEdit(1);const f=document.querySelector(".err:not(:empty)");if(f&&f.scrollIntoView)f.scrollIntoView({block:"center",behavior:"smooth"});return}
 const pre=preSum()>0,due=dueNow(),rest=sum()-CPN.disc-due,ad=a+(pre?"\n[طلب مسبق باركوماند — المدفوع الآن: "+due+" والباقي عند الاستلام: "+rest+"]":"");
 const L=cartLines(),mn=+(S.set.opts||{}).min||0;if(mn>0&&sum()<mn){toast("الحد الأدنى للطلب "+m(mn),1);return}for(const l of L)if(!l.c.pre&&l.c.q>+l.s.stock){toast("الكمية غير متوفرة: "+l.p.name,1);return}
 const sbn=$("#sb"),btxt=sbn.textContent,undo=()=>{sbn.disabled=false;sbn.textContent=btxt};sbn.disabled=true;
@@ -442,16 +451,17 @@ if(!/^[0-9]{8}$/.test(ph))return caMsg("اكتب رقم الهاتف 8 أرقا�
 if(kind=="key"){x.k=String(($("#ca_key")||{}).value||"").replace(/[^A-Za-z0-9]/g,"").toUpperCase();if(x.k.length!=12)return caMsg("اكتب رمز الطوارئ كاملًا (12 حرفًا ورقمًا، مثال: K7P2-9QXM-4DHT)")}
 if(kind=="order"){x.o=String(($("#ca_ord")||{}).value||"").trim().toUpperCase();if(!x.o)return caMsg("اكتب رقم طلب سابق (مثال: MC12345678)")}
 if(kind=="code"){x.c=caV("ca_code");if(!/^[0-9]{6}$/.test(x.c))return caMsg("اكتب الرمز الذي وصلك على واتساب (6 أرقام)")}
+if(kind=="reg"){x.n=String(($("#ca_nm")||{}).value||"").trim().slice(0,60);x.a=String(($("#ca_addr")||{}).value||"").trim().slice(0,300);if(!x.n)return caMsg("اكتب اسمك")}
 if(!/^[0-9]{6}$/.test(pin))return caMsg(kind=="login"?"اكتب الرمز السري (6 أرقام)":"الرمز السري يجب أن يكون 6 أرقام");
 if(kind!="login"&&pin!==pin2)return caMsg("الرمزان غير متطابقين");
 const b=$("#ca_btn");if(b)b.disabled=true;caMsg("جارٍ التنفيذ…",1);
 try{let d;if(kind=="login")d=await caRpc("cust_login",{p_phone:ph,p_pin:pin});
-else if(kind=="reg")d=await caRpc("cust_register",{p_phone:ph,p_pin:pin,p_name:String(($("#ca_nm")||{}).value||"").trim().slice(0,60)});
+else if(kind=="reg"){d=await caRpc("cust_register",{p_phone:ph,p_pin:pin,p_name:x.n});if(d.ok&&d.token)await caRpc("cust_save_profile",{p_token:d.token,p_name:x.n,p_addr:x.a,p_pay_no:null,p_method:null}).catch(()=>{})}
 else if(kind=="key")d=await caRpc("cust_reset_key",{p_phone:ph,p_key:x.k,p_pin:pin});
 else if(kind=="order")d=await caRpc("cust_reset_order",{p_phone:ph,p_order:x.o,p_pin:pin});
 else d=await caRpc("cust_reset_code",{p_phone:ph,p_code:x.c,p_pin:pin});
 if(!d.ok){caMsg(d.msg||"تعذّر التنفيذ");if(b)b.disabled=false;return}
-CA.t=d.token;CA.p={phone:ph,name:(CA.p&&CA.p.phone==ph&&CA.p.name)||""};CA.data=null;CA.msg="";CA.sent="";CA.fm="";CA.req="";try{sessionStorage.removeItem("mc_req")}catch(e){}if(d.key)CA.key=d.key;caSave();
+CA.t=d.token;CA.p=kind=="reg"?{phone:ph,name:x.n,addr:x.a}:{phone:ph,name:(CA.p&&CA.p.phone==ph&&CA.p.name)||""};CA.data=null;CA.msg="";CA.sent="";CA.fm="";CA.req="";try{sessionStorage.removeItem("mc_req")}catch(e){}if(d.key)CA.key=d.key;caSave();
 toast(kind=="login"?"مرحبًا بك 👋":kind=="reg"?"تم إنشاء حسابك ✔":"تم تغيير الرمز السري ✔");route(1);scrollTo(0,0);
 const cl=CA.claimAfter;CA.claimAfter="";if(cl)caRpc("cust_claim",{p_token:CA.t,p_order:cl}).catch(()=>{}).then(()=>{CA.at=0;caLoad()});else caLoad()}
 catch(e){caMsg((e&&e.message)||String(e));if(b)b.disabled=false}}
@@ -494,11 +504,11 @@ ${caF("pf_pay","الرقم الذي تدفع منه (للدفع البنكي)","
 ${A.mKey?`<hr><b>رمز الطوارئ</b><div class="mu">${d.haskey?"لديك رمز طوارئ. إن أضعته أنشئ رمزًا جديدًا (القديم يتوقف).":"ليس لديك رمز طوارئ بعد. أنشئه الآن لتسترجع حسابك بدون واتساب."}</div>${caF("ca_kpin","رمزك السري للتأكيد","••••••",6,"pin")}<div id="cakmsg" class="err"></div><button class="btn o" onclick="caNewKey()">إنشاء رمز طوارئ جديد</button>`:""}
 <hr><button class="btn o" onclick="caOut(1)">تسجيل الخروج من كل الأجهزة</button></details>
 <div style="text-align:center;margin:14px 0"><button class="btn r" onclick="caOut()">تسجيل الخروج</button></div>`}
-const T=CA.tab=="forgot"?"forgot":"login",tabs=[["login","تسجيل الدخول"],["forgot","نسيت الرمز السري"]];
+const T=["login","reg","forgot"].includes(CA.tab)?CA.tab:"login",tabs=[["login","تسجيل الدخول"],["reg","إنشاء حساب"],["forgot","نسيت الرمز السري"]];
 const FM=[...(A.mWa?[["wa","رمز عبر واتساب"]]:[]),...(A.mOrder?[["order","رقم طلب سابق"]]:[])],fm=FM.some(x=>x[0]==CA.fm)?CA.fm:(FM[0]||[""])[0];
 let body="";
-if(T=="login")body=`${caF("ca_ph","رقم الهاتف (8 أرقام)","8 أرقام",8,"tel")}${caF("ca_pin","الرمز السري (6 أرقام)","••••••",6,"pin")}<div id="caerr" class="err"></div><button class="btn" id="ca_btn" onclick="caDo('login')">دخول</button><p class="mu">ليس لديك حساب؟ يُنشأ حسابك تلقائيًا عند أول طلب: اختر رمزًا سريًا في آخر صفحة الطلب. <a onclick="go('shop')" style="color:var(--goldd);cursor:pointer;font-weight:700">تسوّق الآن</a></p>`;
-else if(T=="reg")body=`<div class="mu">أنشئ حسابك برقم هاتفك ورمز سري من 6 أرقام تختاره أنت. ستحصل بعدها على «رمز طوارئ» لاسترجاع حسابك إن نسيت الرمز.</div>${caF("ca_ph","رقم الهاتف (8 أرقام)","8 أرقام",8,"tel")}<label class="lbl">اسمك (اختياري)</label><input class="f" id="ca_nm" maxlength="60" autocomplete="name">${caF("ca_pin","اختر رمزًا سريًا (6 أرقام)","••••••",6,"pin")}${caF("ca_pin2","أعد كتابة الرمز السري","••••••",6,"pin")}<div class="mu">لا تستخدم رمزًا سهلًا مثل 123456 أو 111111.</div><div id="caerr" class="err"></div><button class="btn" id="ca_btn" onclick="caDo('reg')">إنشاء الحساب</button>`;
+if(T=="login")body=`${caF("ca_ph","رقم الهاتف (8 أرقام)","8 أرقام",8,"tel")}${caF("ca_pin","الرمز السري (6 أرقام)","••••••",6,"pin")}<div id="caerr" class="err"></div><button class="btn" id="ca_btn" style="width:100%" onclick="caDo('login')">دخول</button><p class="mu" style="text-align:center">ليس لديك حساب؟ <a onclick="CA.tab='reg';route(1)" style="color:var(--goldd);cursor:pointer;font-weight:700">أنشئ حسابك الآن</a></p>`;
+else if(T=="reg")body=`<div class="mu">أنشئ حسابك الآن، وتُكتب بياناتك تلقائيًا في كل طلب قادم.</div>${caF("ca_ph","رقم الهاتف (8 أرقام) *","8 أرقام",8,"tel")}<label class="lbl">الاسم *</label><input class="f" id="ca_nm" maxlength="60" autocomplete="name"><label class="lbl">العنوان بالتفصيل</label><textarea class="f" id="ca_addr" rows="2" maxlength="300" placeholder="الحي، الشارع، أقرب معلم…" autocomplete="street-address"></textarea>${caF("ca_pin","اختر رمزًا سريًا (6 أرقام) *","••••••",6,"pin")}${caF("ca_pin2","أعد كتابة الرمز السري *","••••••",6,"pin")}<div class="mu">لا تستخدم رمزًا سهلًا مثل 123456 أو 111111.</div><div id="caerr" class="err"></div><button class="btn" id="ca_btn" style="width:100%" onclick="caDo('reg')">إنشاء الحساب</button>`;
 else if(!FM.length)body=`<div class="mu">لاسترجاع حسابك تواصل معنا عبر واتساب.</div><a class="btn" target="_blank" rel="noopener" href="https://wa.me/${waNum((S.set.social||{}).whatsapp||"26822281")}">واتساب المتجر</a>`;
 else{body=`${FM.length>1?`<div class="mu">اختر طريقة الاسترجاع:</div><div class="chips" style="margin:6px 0">${FM.map(([k,t])=>`<span class="chip ${fm==k?"on":""}" onclick="CA.fm='${k}';route(1)">${t}</span>`).join("")}</div>`:""}${caF("ca_ph","رقم الهاتف المسجّل","8 أرقام",8,"tel",CA.sent)}`;
 if(fm=="wa")body+=CA.sent?`${CA.how=="manual"?caReqBox("reset"):""}${caF("ca_code","الرمز الذي وصلك على واتساب (6 أرقام)","000000",6,"otp")}${caF("ca_pin","الرمز السري الجديد (6 أرقام)","••••••",6,"pin")}${caF("ca_pin2","أعد كتابة الرمز الجديد","••••••",6,"pin")}<div id="caerr" class="ok">${CA.how=="auto"?E(caSentMsg("auto")):""}</div><button class="btn" id="ca_btn" onclick="caDo('code')">تغيير الرمز والدخول</button> <button class="btn o" onclick="CA.sent='';route(1)">${CA.how=="auto"?"إعادة الإرسال / رقم آخر":"كود طلب جديد / رقم آخر"}</button>`:(A.waAuto?`<div class="mu">نرسل رمزًا من 6 أرقام إلى واتساب رقمك المسجّل (صالح 30 دقيقة).</div><div id="caerr" class="err"></div><button class="btn" id="ca_req" onclick="caReq()">أرسلوا لي الرمز عبر واتساب</button>`:`<div class="mu">ستحصل على «كود طلب» ترسله لنا عبر واتساب من رقمك المسجّل، ثم يرسل لك فريق المتجر رمزًا من 6 أرقام لتغيير رمزك السري. بعدها تظهر لك كل طلباتك السابقة.</div><div id="caerr" class="err"></div><button class="btn" id="ca_req" onclick="caReq()">اطلب كود الاسترجاع</button>`);
