@@ -359,6 +359,7 @@ header{transition:box-shadow .2s}
 .tb a.on svg{color:var(--gold)}
 .tb .bd{top:2px;inset-inline-start:auto;inset-inline-end:calc(50% - 22px);box-shadow:0 0 0 2px var(--card)}
 .tb .bd:empty,.tb .bd[data-z]{display:none}
+.tb a.tbc{flex:1.2}.tb a.tbc svg{width:26px;height:26px;padding:13px;box-sizing:content-box;background:var(--gold);color:#111;border-radius:50%;margin-top:-30px;margin-bottom:2px;box-shadow:0 8px 18px color-mix(in srgb,var(--gold) 45%,transparent),0 0 0 5px var(--card);transition:transform .2s}.tb a.tbc:active svg{transform:scale(.94)}.tb a.tbc.on{background:none;color:var(--tx)}.tb a.tbc.on svg{color:#111}.tb a.tbc .bd{top:-30px;inset-inline-end:calc(50% - 32px);background:var(--ink);color:#fff;box-shadow:0 0 0 2px var(--card)}
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 #wf{bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
 #sn{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
@@ -1098,7 +1099,7 @@ const w=$("#wf");w.hidden=!o.wa;w.href="https://wa.me/"+waNum((S.set.social||{})
 const de=document.documentElement;if(o.theme=="light"||o.theme=="dark")de.dataset.theme=o.theme;else delete de.dataset.theme;
 if(IS_ADMIN)return;const show=(el,v)=>{if(el)el.style.display=v?"":"none"};
 show($("#q"),UI("search"));show(document.querySelector('header .ib[onclick*="favs"]'),UI("favBtn"));show(document.querySelector('header .ib[onclick*="cart"]'),UI("cartBtn"));show($("#lg"),UI("langBtn"));
-document.querySelectorAll("nav a[data-r]").forEach(a=>{const r=a.dataset.r;if(r!="home"&&r!="admin")show(a,pgOn(r)&&(r!="video"||hasVid()))});
+document.querySelectorAll("nav a[data-r]").forEach(a=>{const r=a.dataset.r;if(r!="home"&&r!="admin")show(a,a.closest(".tb")&&r=="video"?(pgOn("video")&&hasVid())||pgOn("how"):pgOn(r)&&(r!="video"||hasVid()))});
 const ft=document.querySelector("footer");if(ft){show(ft,UI("footer"));ft.querySelectorAll("a[onclick]").forEach(a=>{const r=((a.getAttribute("onclick")||"").match(/go\('([^']*)'\)/)||[])[1];if(r)show(a,pgOn(r)&&(r!="video"||hasVid()))});
 const fb=ft.querySelector("b");if(fb&&fb.nextSibling&&fb.nextSibling.nextSibling&&fb.nextSibling.nextSibling.nodeType==3){const n=fb.nextSibling.nextSibling;if(n._f===undefined)n._f=n._o!==undefined?n._o:n.nodeValue;n._o=UT("foot",n._f);n.nodeValue=n._o}}}
 function logoShrink(file){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,400/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);let d=c.toDataURL("image/png");if(d.length>250000)d=c.toDataURL("image/jpeg",.85);ok(d)};im.src=r.result};r.readAsDataURL(file)})}
@@ -1199,7 +1200,7 @@ if((S.set.opts||{}).maint&&!S.admin&&k!="admin"){app.innerHTML=`<div class="box"
 if((!S.ready||!S.setL)&&k!="admin"&&k!="about"&&k!="contact"){app.innerHTML='<div class="box">جارٍ التحميل…</div>';return}
 let H=k.indexOf("pg:")==0?V.pg(k.slice(3)):k=="p"?V.p(b):k=="shop"?V.shop(keep?undefined:arg??""):V[k]();const bn=UI("pgh")?PB[k]:null;if(k=="p"&&!keep&&b)rvPush(b);
 app.innerHTML=`<div class="pg${keep?"":" an"}">${bn?`<div class="pgh"><b>${bn[0]}</b><span>${bn[1]}</span></div>`:""}${H}</div>`;
-document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.dataset.r==(k.indexOf("pg:")==0?"":k=="p"?"shop":k)));{const tb=$("#tb");if(tb)tb.hidden=!!IS_ADMIN||k=="admin"}
+document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.dataset.r==(k.indexOf("pg:")==0?"":k=="p"?"shop":k)||(k=="how"&&a.dataset.r=="video"&&!!a.closest(".tb"))));{const tb=$("#tb");if(tb)tb.hidden=!!IS_ADMIN||k=="admin"}
 if(k=="checkout"){payInfo();tsInit();}if(k=="account"&&CA.t)CA.msg="";if(k=="account"&&CA.pre&&!CA.t){CA.pre=0;try{const l=JSON.parse(sessionStorage.getItem("last")||"null");if(l){const a=$("#ca_ph"),c=$("#ca_nm");if(a)a.value=dig(l.c).slice(0,8);if(c&&l.n)c.value=l.n;CA.claimAfter=l.id||""}}catch(e){}}if(k=="admin"&&ed&&$("#pch"))pcHint();if(k=="p"){loadRv(b);try{const pp=S.prods.find(x=>x.id==b);if(pp)document.title=pp.name+" | MC للعطور"}catch(e){}}else if(k!="admin"){try{document.title=PB[k]?PB[k][0]+" | MC للعطور":"MC للعطور – MC PERFUMES"}catch(e){}}if(k!="admin"&&!keep)anPage();applyRepl(k=="admin");applyLang();badge();if(!keep)scrollTo(0,0)}
 addEventListener("hashchange",()=>{sel={i:0,q:1};route();tvHit();liveTrack()});
 const q=$("#q"),sg=$("#sg");q.oninput=()=>{const k=nz(q.value);if(!k){sg.hidden=true;return}const r=vis().filter(p=>nz(p.name+" "+p.brand).includes(k)).slice(0,6);sg.innerHTML=r.map(p=>`<div onclick="go('p/${p.id}');sg.hidden=true">${E(p.name)} <span class="mu">${E(p.brand)}</span></div>`).join("")||'<div class="mu">لا نتائج</div>';sg.hidden=false};
