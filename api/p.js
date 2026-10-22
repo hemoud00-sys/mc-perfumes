@@ -4,7 +4,7 @@
 export const config = { runtime: 'edge' };
 
 const SB = 'https://ceqbaqkhzchrrrhpwsxk.supabase.co';
-const KEY = 'sb_publishable_VBhVaWYRbS6LUoOwNQSKzw_ByKhqHDu'; // المفتاح العام نفسه الموجود داخل الموقع (آمن للنشر)
+const KEY = 'sb_publishable_VQECPReRWmnKZKK7s6YLiQ_URuZMCdk'; // المفتاح العام نفسه الموجود داخل الموقع (آمن للنشر)
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -37,6 +37,12 @@ export default async function handler(req) {
         set(/(<meta property="og:description" content=")[^"]*(")/, esc(desc));
         set(/(<meta property="og:url" content=")[^"]*(")/, esc(url));
         set(/(<link rel="canonical" href=")[^"]*(")/, esc(url));
+        const ld = { '@context': 'https://schema.org', '@type': 'Product', name: d.name, image: img ? [img] : undefined,
+          description: d.desc || desc, brand: d.brand ? { '@type': 'Brand', name: d.brand } : undefined, url,
+          offers: (d.sizes || []).filter(z => +z.price > 0).map(z => ({ '@type': 'Offer', name: (z.ml || '') + ' ml', price: String(+z.price),
+            priceCurrency: 'MRU', availability: +z.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder', url,
+            seller: { '@id': 'https://www.mcperfumes.com/#store' } })) };
+        html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script></head>`);
         if (img) {
           set(/(<meta property="og:image" content=")[^"]*(")/, esc(img));
           html = html.replace('<meta name="twitter:card" content="summary">',
