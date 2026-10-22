@@ -354,6 +354,8 @@ header{transition:box-shadow .2s}
 @media(max-width:760px){
 .tb{display:flex;position:fixed;inset-inline:10px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:30;background:color-mix(in srgb,var(--card) 88%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(16px);backdrop-filter:saturate(1.6) blur(16px);border:1px solid var(--br);border-radius:20px;box-shadow:0 8px 24px #00000024;padding:3px 4px;gap:2px;justify-content:space-around;width:auto;overflow:visible}
 .tb[hidden]{display:none}
+header>.row+.row{display:none}
+.tb a span:not(.bd){color:var(--tx)}
 .tb a{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;padding:4px 2px 3px;border-radius:14px;color:var(--mu);font-size:10px;line-height:1.5;font-weight:700;background:none;position:relative;min-width:0}
 .tb a svg{width:20px;height:20px}
 .tb a:hover{background:none;color:var(--tx)}
