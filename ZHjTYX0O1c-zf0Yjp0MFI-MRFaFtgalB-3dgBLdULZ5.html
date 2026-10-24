@@ -371,7 +371,10 @@ header{padding:8px 12px 10px}
 h2{font-size:18px;margin:24px 0 12px}
 .box{padding:15px}
 }
-</style></head><body>
+#hw{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom,0px));inset-inline-end:10px;z-index:8;display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:#111;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;box-shadow:0 0 0 2px #fff,0 8px 22px color-mix(in srgb,var(--gold) 50%,transparent)}
+#hw svg{width:17px;height:17px}#hw[hidden],#hw.here{display:none}
+#hw:not([hidden]):not(.here)~#wf{bottom:calc(58px + env(safe-area-inset-bottom,0px))!important}
+@media(max-width:760px){#hw{bottom:calc(72px + env(safe-area-inset-bottom,0px))}#hw:not([hidden]):not(.here)~#wf{bottom:calc(120px + env(safe-area-inset-bottom,0px))!important}}</style></head><body>
 <div id="ann" hidden></div><a id="wf" hidden></a>
 <header><div class="row"><div class="logo" onclick="route(1)">MC<small>للعطور · MC PERFUMES</small></div><div class="sp"></div><b style="color:var(--gold);font-size:15px">لوحة الإدارة · v6</b><span hidden><button id="lg"></button><span id="fc">0</span><span id="cc">0</span><a id="adm" style="display:none"><span class="nb" hidden>0</span></a></span></div>
 <input id="q" hidden><div id="sg" hidden></div></header>
@@ -1110,7 +1113,7 @@ const w=$("#wf");w.hidden=!o.wa;w.href="https://wa.me/"+waNum((S.set.social||{})
 const de=document.documentElement;if(o.theme=="light"||o.theme=="dark")de.dataset.theme=o.theme;else delete de.dataset.theme;
 if(IS_ADMIN)return;const show=(el,v)=>{if(el)el.style.display=v?"":"none"};
 show($("#q"),UI("search"));show(document.querySelector('header .ib[onclick*="favs"]'),UI("favBtn"));show(document.querySelector('header .ib[onclick*="cart"]'),UI("cartBtn"));show($("#lg"),UI("langBtn"));
-document.querySelectorAll("nav a[data-r]").forEach(a=>{const r=a.dataset.r;if(r!="home"&&r!="admin")show(a,a.closest(".tb")&&r=="video"?(pgOn("video")&&hasVid())||pgOn("how"):pgOn(r)&&(r!="video"||hasVid()))});
+document.querySelectorAll("nav a[data-r]").forEach(a=>{const r=a.dataset.r;if(r!="home"&&r!="admin")show(a,a.closest(".tb")&&r=="video"?(pgOn("video")&&hasVid())||pgOn("how"):pgOn(r)&&(r!="video"||hasVid()))});{const hw=$("#hw");if(hw)hw.hidden=!((pgOn("video")&&hasVid())||pgOn("how"))}
 const ft=document.querySelector("footer");if(ft){show(ft,UI("footer"));ft.querySelectorAll("a[onclick]").forEach(a=>{const r=((a.getAttribute("onclick")||"").match(/go\('([^']*)'\)/)||[])[1];if(r)show(a,pgOn(r)&&(r!="video"||hasVid()))});
 const fb=ft.querySelector("b");if(fb&&fb.nextSibling&&fb.nextSibling.nextSibling&&fb.nextSibling.nextSibling.nodeType==3){const n=fb.nextSibling.nextSibling;if(n._f===undefined)n._f=n._o!==undefined?n._o:n.nodeValue;n._o=UT("foot",n._f);n.nodeValue=n._o}}}
 function logoShrink(file){return new Promise((ok,no)=>{const r=new FileReader();r.onerror=no;r.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,400/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);let d=c.toDataURL("image/png");if(d.length>250000)d=c.toDataURL("image/jpeg",.85);ok(d)};im.src=r.result};r.readAsDataURL(file)})}
@@ -1211,7 +1214,7 @@ if((S.set.opts||{}).maint&&!S.admin&&k!="admin"){app.innerHTML=`<div class="box"
 if((!S.ready||!S.setL)&&k!="admin"&&k!="about"&&k!="contact"){app.innerHTML='<div class="box">جارٍ التحميل…</div>';return}
 let H=k.indexOf("pg:")==0?V.pg(k.slice(3)):k=="p"?V.p(b):k=="shop"?V.shop(keep?undefined:arg??""):V[k]();const bn=UI("pgh")?PB[k]:null;if(k=="p"&&!keep&&b)rvPush(b);
 app.innerHTML=`<div class="pg${keep?"":" an"}">${bn?`<div class="pgh"><b>${bn[0]}</b><span>${bn[1]}</span></div>`:""}${H}</div>`;
-document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.dataset.r==(k.indexOf("pg:")==0?"":k=="p"?"shop":k)||(k=="how"&&a.dataset.r=="video"&&!!a.closest(".tb"))));{const tb=$("#tb");if(tb)tb.hidden=!!IS_ADMIN||k=="admin"}
+document.querySelectorAll("nav a").forEach(a=>a.classList.toggle("on",a.dataset.r==(k.indexOf("pg:")==0?"":k=="p"?"shop":k)||(k=="how"&&a.dataset.r=="video"&&!!a.closest(".tb"))));{const tb=$("#tb");if(tb)tb.hidden=!!IS_ADMIN||k=="admin"}{const hw=$("#hw");if(hw)hw.classList.toggle("here",k=="video"||k=="how"||k=="admin")}
 if(k=="checkout"){payInfo();tsInit();}if(k=="account"&&CA.t)CA.msg="";if(k=="account"&&CA.pre&&!CA.t){CA.pre=0;try{const l=JSON.parse(sessionStorage.getItem("last")||"null");if(l){const a=$("#ca_ph"),c=$("#ca_nm");if(a)a.value=dig(l.c).slice(0,8);if(c&&l.n)c.value=l.n;CA.claimAfter=l.id||""}}catch(e){}}if(k=="admin"&&ed&&$("#pch"))pcHint();if(k=="p"){loadRv(b);try{const pp=S.prods.find(x=>x.id==b);if(pp)document.title=pp.name+" | MC للعطور"}catch(e){}}else if(k!="admin"){try{document.title=PB[k]?PB[k][0]+" | MC للعطور":"MC للعطور | متجر عطور أصلية في موريتانيا – نواكشوط"}catch(e){}}if(k!="admin"&&!keep)anPage();applyRepl(k=="admin");applyLang();badge();if(!keep)scrollTo(0,0)}
 addEventListener("hashchange",()=>{sel={i:0,q:1};route();tvHit();liveTrack()});
 const q=$("#q"),sg=$("#sg");q.oninput=()=>{const k=nz(q.value);if(!k){sg.hidden=true;return}const r=vis().filter(p=>nz(p.name+" "+p.brand).includes(k)).slice(0,6);sg.innerHTML=r.map(p=>`<div onclick="go('p/${p.id}');sg.hidden=true">${E(p.name)} <span class="mu">${E(p.brand)}</span></div>`).join("")||'<div class="mu">لا نتائج</div>';sg.hidden=false};
