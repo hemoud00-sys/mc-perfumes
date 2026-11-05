@@ -447,12 +447,12 @@ if(k)a=a.filter(p=>qm([p.name,p.brand,p.cat,p.notes,...(p.sizes||[]).map(s=>s.ml
 if(f.brand)a=a.filter(p=>p.brand==f.brand);if(f.ml)a=a.filter(p=>(p.sizes||[]).some(s=>s.ml==f.ml));if(f.max)a=a.filter(p=>minp(p)<=+f.max);if(f.av)a=a.filter(p=>stk(p)>0);if(f.sale)a=a.filter(p=>+p.oldPrice>0);if(f.st=="bar")a=a.filter(barSP);if(f.st=="av")a=a.filter(readyP);
 const o=f.o||"new";return a.sort((x,y)=>o=="lo"?minp(x)-minp(y):o=="hi"?minp(y)-minp(x):o=="best"?(y.sold||0)-(x.sold||0):(y.ts||0)-(x.ts||0))}
 const V={};
-const SECD={ready:[()=>SN("ready"),12],bar:[()=>SN("bar"),12],best:[()=>"الأكثر مبيعًا",8],new:[()=>"المضافة حديثًا",8],sale:[()=>"العروض والخصومات",8],full:[()=>"العطور الكاملة",6],ml10:[()=>"عطور مقسّمة 10 مل",6],ml5:[()=>"عطور مقسّمة 5 مل",6],recent:[()=>"شاهدتها مؤخرًا",6]};
+const SECD={ready:[()=>SN("ready"),Infinity],bar:[()=>SN("bar"),Infinity],/* الجاهز والباركوماند: كل العطور تظهر في الرئيسية (إلا إذا حُدّد عدد من لوحة الإدارة) */best:[()=>"الأكثر مبيعًا",8],new:[()=>"المضافة حديثًا",8],sale:[()=>"العروض والخصومات",8],full:[()=>"العطور الكاملة",6],ml10:[()=>"عطور مقسّمة 10 مل",6],ml5:[()=>"عطور مقسّمة 5 مل",6],recent:[()=>"شاهدتها مؤخرًا",6]};
 const secOrder=()=>{const o=(OP().secO||[]).filter(k=>SECD[k]);return [...o,...Object.keys(SECD).filter(k=>!o.includes(k))]};
 const FEATD=["✔ عطور أصلية 100٪","📏 أحجام متعددة تناسب احتياجاتك","🏦 وسائل دفع محلية","🚚 توصيل مجاني لجميع الطلبات"];
 let RV=[];try{RV=JSON.parse(localStorage.getItem("mc_rv")||"[]")}catch(e){}
 function rvPush(id){RV=[id,...RV.filter(x=>x!=id)].slice(0,12);try{localStorage.setItem("mc_rv",JSON.stringify(RV))}catch(e){}}
-V.home=()=>{const o=OP(),P=vis(),Q=P.filter(p=>!isBarSec(p)),h=o.hide||{},T=o.secT||{},N=o.secN||{},has=(p,f)=>(p.sizes||[]).some(f);
+V.home=()=>{const o=OP(),P=vis(),Q=P/* كل العطور (جاهزة + باركوماند) تظهر في كل أقسام الرئيسية، وتبقى عطور الباركوماند أيضًا في قسمها الخاص */,h=o.hide||{},T=o.secT||{},N=o.secN||{},has=(p,f)=>(p.sizes||[]).some(f);
 const L={ready:()=>P.filter(readyP),bar:()=>P.filter(barSP),best:()=>filt(Q.filter(p=>p.featured||p.best),{o:"best"}),new:()=>filt(Q,{}),sale:()=>filt(Q,{sale:1}),full:()=>Q.filter(p=>has(p,s=>+s.ml>=30)),ml10:()=>Q.filter(p=>has(p,s=>s.ml==10)),ml5:()=>Q.filter(p=>has(p,s=>s.ml==5)),recent:()=>RV.map(id=>P.find(p=>p.id==id)).filter(Boolean)};
 const sec=k=>{if(h[k]||(k=="bar"&&preOff())||(k=="recent"&&!o.showRecent))return"";const l=L[k]().slice(0,+N[k]>0?+N[k]:SECD[k][1]);if(!l.length&&k!="new")return"";return `<h2${k=="bar"?' style="color:var(--warn);border-inline-start-color:var(--warn)"':""}>${E(T[k]||SECD[k][0]())}</h2>${grid(l)}`};
 const ft=(o.feat||[]).length?o.feat:FEATD;
